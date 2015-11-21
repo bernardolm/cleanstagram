@@ -1,0 +1,25 @@
+{
+  "name": "cleanstagram",
+  "version": "1.0.0",
+  "description": "clean a instagram",
+  "main": "main.js",
+  "dependencies": {
+    "express": "^4.13.3",
+    "http": "0.0.0",
+    "instagram-node": "^0.5.8"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bernardolm/cleanstagram.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bernardolm/cleanstagram/issues"
+  },
+  "homepage": "https://github.com/bernardolm/cleanstagram#readme"
+}
