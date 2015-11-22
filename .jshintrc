@@ -1,0 +1,71 @@
+{ "asi": true
+, "boss": true
+, "bitwise": true
+, "browser": true
+, "camelcase": false
+, "curly": false
+, "debug": false
+, "devel": false
+, "devel": true
+, "eqeqeq": true
+, "eqnull": true
+, "es3": false
+, "es5": false
+, "esnext": false
+, "evil": false
+, "expr": false
+, "forin": true
+, "freeze": true
+, "funcscope": false
+, "globals": {}
+, "globalstrict": false
+, "immed": false
+, "indent": 2
+, "iterator": false
+, "jquery": true
+, "lastsemic": false
+, "latedef": false
+, "laxbreak": true
+, "laxcomma": true
+, "loopfunc": true
+, "maxcomplexity": 51 /* REFATORAR PARA REDUZIR SIGNIFICATIVAMENTE */
+, "maxdepth": 5
+, "maxerr": false
+, "maxlen": false
+, "maxparams": 10
+, "maxstatements": 60 /* REFATORAR PARA REDUZIR SIGNIFICATIVAMENTE */
+, "moz": false
+, "multistr": false
+, "noarg": true
+, "newcap": true
+, "node": true
+, "noempty": false
+, "nonbsp": true
+, "nonew": true
+, "notypeof": false
+, "noyield": false
+, "proto": false
+, "quotmark": "single"
+, "scripturl": false
+, "shadow": false
+, "smarttabs": true
+, "strict": false
+, "sub": true
+, "supernew": false
+, "trailing": false
+, "undef": true
+, "unused": true
+, "plusplus": false
+, "predef": [
+    "inject",
+    "require",
+    "describe",
+    "beforeEach",
+    "it", "xit",
+    "angular",
+    "expect",
+    "console",
+    "_",
+    "session"
+  ]
+, "validthis": false }
