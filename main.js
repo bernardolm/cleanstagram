@@ -1,15 +1,29 @@
 'use strict';
 
-var http = require('http');
+var yaml    = require('js-yaml');
+var fs      = require('fs');
+var http    = require('http');
 var express = require('express');
 var request = require('request');
-var _ = require('lodash');
-var api = require('instagram-node').instagram();
-var app = express();
+var _       = require('lodash');
+var api     = require('instagram-node').instagram();
+var app     = express();
 
 /**********************************************************************/
 
-var access_token = process.env.INSTAGRAM_ACCESS_TOKEN;
+var config,
+    access_token;
+
+try {
+  config = yaml.safeLoad(fs.readFileSync('config.yml', 'utf8')).config;
+  console.log(JSON.stringify(config));
+} catch (e) {
+  console.log(e);
+  process.exit(1);
+}
+
+/**********************************************************************/
+
 var port = 3000;
 
 app.listen(port);
@@ -21,40 +35,20 @@ app.get('/', function (req, res) {
 /**********************************************************************/
 
 var setClient = function () {
-  console.log('client_id: ', process.env.INSTAGRAM_CLIENT_ID);
-  console.log('client_secret: ', process.env.INSTAGRAM_CLIENT_SECRET);
+  console.log('client_id: ', config.instagram.client.id);
+  console.log('client_secret: ', config.instagram.client.secret);
   console.log('access_token: ', access_token);
 
   api.use({
-    client_id: process.env.INSTAGRAM_CLIENT_ID,
-    client_secret: process.env.INSTAGRAM_CLIENT_SECRET,
+    client_id: config.instagram.client.id,
+    client_secret: config.instagram.client.secret,
     access_token: access_token
   });
 };
 
-var doWork = function (req, res) {
-  // setClient();
+/**********************************************************************/
 
-  // api.user(process.env.INSTAGRAM_USER_ID, function (err, result, remaining, limit) {
-  //   console.log('err:', err);
-  //   console.log('result:', result);
-  //   console.log('remaining:', remaining);
-  //   console.log('limit:', limit);
-  // });
-
-  // api.user_followers(process.env.INSTAGRAM_USER_ID, function (err, users, pagination, remaining, limit) {
-  //   if (err) {
-  //     console.log('err:', err);
-  //     res.redirect('/authorize_user');
-  //   }
-  //   else {
-  //     console.log('users:', users);
-  //     console.log('pagination:', pagination);
-  //     console.log('remaining:', remaining);
-  //     console.log('limit:', limit);
-  //   }
-  // });
-
+var block_followers = function (req, res) {
   console.log('requesting followed-by...');
 
   request('https://api.instagram.com/v1/users/self/followed-by?access_token=' + access_token, function (error, response, body) {
@@ -85,7 +79,7 @@ var doWork = function (req, res) {
   });
 };
 
-app.get('/doWork', doWork);
+app.get('/block_followers', block_followers);
 
 /**********************************************************************/
 
@@ -94,6 +88,7 @@ setClient();
 var redirect_uri = 'http://localhost:3000/handleauth';
 
 exports.authorize_user = function (req, res) {
+  access_token = undefined;
   res.redirect(api.get_authorization_url(redirect_uri, { scope: ['basic', 'public_content', 'follower_list', 'relationships'], state: 'a state' }));
 };
 
@@ -104,15 +99,16 @@ exports.handleauth = function (req, res) {
       res.send('Didn\'t work');
     } else {
       console.log('Yay! Access token is ' + result.access_token);
-      access_token = result.access_token;
+      config.instagram.access.token = result.access_token;
       // res.send('You made it!!');
-      res.redirect('/dowork');
+      res.redirect('/block_followers');
     }
   });
 };
 
 // This is where you would initially send users to authorize
 app.get('/authorize_user', exports.authorize_user);
+
 // This is your redirect URI
 app.get('/handleauth', exports.handleauth);
 
