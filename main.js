@@ -1,13 +1,12 @@
 'use strict';
 
-var yaml    = require('js-yaml');
 var fs      = require('fs');
-var http    = require('http');
+var yaml    = require('js-yaml');
 var express = require('express');
-var request = require('request');
-var _       = require('lodash');
-var api     = require('instagram-node').instagram();
 var app     = express();
+var request = require('request');
+var url     = require('url');
+var _       = require('lodash');
 
 /**********************************************************************/
 
@@ -15,8 +14,11 @@ var config,
     access_token;
 
 try {
+  console.log('loading config.yml...');
   config = yaml.safeLoad(fs.readFileSync('config.yml', 'utf8')).config;
-  console.log(JSON.stringify(config));
+  if (!_.isUndefined(config)) {
+    console.log('config.yml loaded');
+  }
 } catch (e) {
   console.log(e);
   process.exit(1);
@@ -24,27 +26,10 @@ try {
 
 /**********************************************************************/
 
-var port = 3000;
-
-app.listen(port);
-
 app.get('/', function (req, res) {
+  console.log('responsing index.html...');
   res.sendFile('index.html', { root: '.' });
 });
-
-/**********************************************************************/
-
-var setClient = function () {
-  console.log('client_id: ', config.instagram.client.id);
-  console.log('client_secret: ', config.instagram.client.secret);
-  console.log('access_token: ', access_token);
-
-  api.use({
-    client_id: config.instagram.client.id,
-    client_secret: config.instagram.client.secret,
-    access_token: access_token
-  });
-};
 
 /**********************************************************************/
 
@@ -53,7 +38,7 @@ var block_followers = function (req, res) {
 
   request('https://api.instagram.com/v1/users/self/followed-by?access_token=' + access_token, function (error, response, body) {
       if (!error && response.statusCode === 200) {
-        // console.log(body); // Show the HTML for the Google homepage.
+        // console.log(body);
         body = JSON.parse(body);
 
         _(body.data).forEach(function (n) {
@@ -64,7 +49,7 @@ var block_followers = function (req, res) {
             console.log(response.statusCode, response.statusMessage, response.body);
 
             if (!error && response.statusCode === 200) {
-              console.log('success: ', body); // Show the HTML for the Google homepage.
+              console.log('success: ', body);
             }
             else {
               console.log('error: ', error);
@@ -83,37 +68,39 @@ app.get('/block_followers', block_followers);
 
 /**********************************************************************/
 
-setClient();
-
-var redirect_uri = 'http://localhost:3000/handleauth';
-
-exports.authorize_user = function (req, res) {
-  access_token = undefined;
-  res.redirect(api.get_authorization_url(redirect_uri, { scope: ['basic', 'public_content', 'follower_list', 'relationships'], state: 'a state' }));
+var authorize_user = function (req, res) {
+  console.log('requesting authorize_user...');
+  res.redirect('https://api.instagram.com/oauth/authorize/?client_id=' + config.instagram.client.id + '&redirect_uri=' + config.instagram.redirect_uri + '&response_type=code&scope=basic+public_content+follower_list+relationships');
 };
 
-exports.handleauth = function (req, res) {
-  api.authorize_user(req.query.code, redirect_uri, function (err, result) {
-    if (err) {
-      console.log(err.body);
-      res.send('Didn\'t work');
-    } else {
-      console.log('Yay! Access token is ' + result.access_token);
-      config.instagram.access.token = result.access_token;
-      // res.send('You made it!!');
-      res.redirect('/block_followers');
-    }
-  });
+app.get('/authorize_user', authorize_user);
+
+/**********************************************************************/
+
+var handleauth = function (req, res) {
+  console.log('responsing handleauth...');
+  var url_parts = url.parse(req.url, true);
+  access_token = url_parts.query.code;
+  res.send(url_parts.query);
+
+  if (!_.isUndefined(url_parts.query.error)) {
+    console.log(url_parts.query);
+    process.exit(1);
+  }
+  else {
+    res.redirect('/');
+  }
 };
 
-// This is where you would initially send users to authorize
-app.get('/authorize_user', exports.authorize_user);
+app.get('/handleauth', handleauth);
 
-// This is your redirect URI
-app.get('/handleauth', exports.handleauth);
+/**********************************************************************/
 
-http.createServer(app).listen(app.get('port'), function () {
-  console.log('Express server listening on port ' + port);
+var server = app.listen(3000, function () {
+  var host = server.address().address;
+  var port = server.address().port;
+
+  console.log('example app listening at http://%s:%s', host, port);
 });
 
 /**********************************************************************/
