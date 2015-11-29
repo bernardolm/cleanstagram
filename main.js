@@ -33,12 +33,41 @@ app.get('/', function (req, res) {
 
 /**********************************************************************/
 
+var authorize_user = function (req, res) {
+  console.log('requesting authorize_user...');
+  res.redirect('https://api.instagram.com/oauth/authorize/?client_id=' + config.instagram.client.id + '&redirect_uri=' + config.instagram.redirect_uri + '&response_type=code&scope=basic+public_content+follower_list+relationships');
+};
+
+app.get('/authorize_user', authorize_user);
+
+/**********************************************************************/
+
+var handleauth = function (req, res) {
+  console.log('responsing handleauth...');
+  var url_parts = url.parse(req.url, true);
+  access_token = url_parts.query.code;
+  res.send(url_parts.query);
+
+  if (!_.isUndefined(url_parts.query.error)) {
+    console.log(url_parts.query);
+    process.exit(1);
+  }
+  else {
+    res.redirect('/');
+  }
+};
+
+app.get('/handleauth', handleauth);
+
+/**********************************************************************/
+
 var block_followers = function (req, res) {
   console.log('requesting followed-by...');
 
   request('https://api.instagram.com/v1/users/self/followed-by?access_token=' + access_token, function (error, response, body) {
+      console.log('followed-by body: ', body);
+
       if (!error && response.statusCode === 200) {
-        // console.log(body);
         body = JSON.parse(body);
 
         _(body.data).forEach(function (n) {
@@ -65,34 +94,6 @@ var block_followers = function (req, res) {
 };
 
 app.get('/block_followers', block_followers);
-
-/**********************************************************************/
-
-var authorize_user = function (req, res) {
-  console.log('requesting authorize_user...');
-  res.redirect('https://api.instagram.com/oauth/authorize/?client_id=' + config.instagram.client.id + '&redirect_uri=' + config.instagram.redirect_uri + '&response_type=code&scope=basic+public_content+follower_list+relationships');
-};
-
-app.get('/authorize_user', authorize_user);
-
-/**********************************************************************/
-
-var handleauth = function (req, res) {
-  console.log('responsing handleauth...');
-  var url_parts = url.parse(req.url, true);
-  access_token = url_parts.query.code;
-  res.send(url_parts.query);
-
-  if (!_.isUndefined(url_parts.query.error)) {
-    console.log(url_parts.query);
-    process.exit(1);
-  }
-  else {
-    res.redirect('/');
-  }
-};
-
-app.get('/handleauth', handleauth);
 
 /**********************************************************************/
 
