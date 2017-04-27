@@ -15,13 +15,16 @@ var config,
 
 try {
   console.log('loading config.yml...');
-  config = yaml.safeLoad(fs.readFileSync('config.yml', 'utf8')).config;
-  if (!_.isUndefined(config)) {
-    console.log('config.yml loaded');
+  file = fs.readFileSync('config.yml', 'utf8');
+  if (!_.isUndefined(file)) {
+    config = yaml.safeLoad(file).config;
+    if (!_.isUndefined(config)) {
+      console.log('config.yml loaded');
+    }
   }
 } catch (e) {
   console.log(e);
-  process.exit(1);
+  // process.exit(1);
 }
 
 /**********************************************************************/
@@ -138,7 +141,7 @@ app.get('/block_followers', block_followers);
 
 /**********************************************************************/
 
-var server = app.listen(3000, function () {
+var server = app.listen(8881, function () {
   var host = server.address().address;
   var port = server.address().port;
 

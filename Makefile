@@ -5,7 +5,7 @@ start-docker:
 	@if [ -z "${CURRENT_DOCKER}" ]; then \
 		echo "creating docker..." && \
 		docker run -it -d \
-		-p 8880:8880 \
+		-p 8881:8881 \
 		-v `pwd`:/app \
 		-w /app \
 		-e "NODE_ENV=development" \
