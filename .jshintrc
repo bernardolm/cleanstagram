@@ -5,7 +5,6 @@
 , "camelcase": false
 , "curly": false
 , "debug": false
-, "devel": false
 , "devel": true
 , "eqeqeq": true
 , "eqnull": true
@@ -28,12 +27,12 @@
 , "laxbreak": true
 , "laxcomma": true
 , "loopfunc": true
-, "maxcomplexity": 51 /* REFATORAR PARA REDUZIR SIGNIFICATIVAMENTE */
+, "maxcomplexity": 10
 , "maxdepth": 5
 , "maxerr": false
 , "maxlen": false
 , "maxparams": 10
-, "maxstatements": 60 /* REFATORAR PARA REDUZIR SIGNIFICATIVAMENTE */
+, "maxstatements": 10
 , "moz": false
 , "multistr": false
 , "noarg": true
@@ -59,9 +58,17 @@
 , "predef": [
     "inject",
     "require",
+    "xrequire",
     "describe",
+    "xdescribe",
+    "before",
+    "xbefore",
     "beforeEach",
-    "it", "xit",
+    "xbeforeEach",
+    "it",
+    "xit",
+    "context",
+    "xcontext",
     "angular",
     "expect",
     "console",
