@@ -9,14 +9,14 @@
   "dependencies": {
     "express": "^4.13.3",
     "js-yaml": "^3.4.6",
-    "lodash": "^3.10.1",
-    "request-promise": "^1.0.2"
+    "lodash": "^4.17.4",
+    "request-promise": "^4.2.1"
   },
   "devDependencies": {
     "chai": "^3.4.1",
-    "chai-as-promised": "^5.1.0",
+    "chai-as-promised": "^6.0.0",
     "jshint": "^2.8.0",
-    "mocha": "^2.3.4"
+    "mocha": "^3.4.1"
   },
   "scripts": {
     "test": "node_modules/.bin/mocha --reporter nyan --timeout 15000"
