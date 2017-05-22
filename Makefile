@@ -11,17 +11,17 @@ start-docker:
 		-e "NODE_ENV=development" \
 		--name=${CONTAINER_NAME} \
 		node:4.5.0-slim && \
-		docker exec ${CONTAINER_NAME} npm install --quiet ; \
+		docker exec -it ${CONTAINER_NAME} npm install --dev && \
 		echo "starting docker..." && \
-		docker start ${CONTAINER_NAME} > /dev/null ; \
+		docker start ${CONTAINER_NAME} > /dev/null; \
 	else \
 		echo "starting docker..." && \
-		docker start ${CONTAINER_NAME} > /dev/null ; \
+		docker start ${CONTAINER_NAME} > /dev/null; \
 	fi
 
 destroy-docker:
-	docker stop ${CONTAINER_NAME}
-	docker rm ${CONTAINER_NAME}
+	-docker stop ${CONTAINER_NAME}
+	-docker rm ${CONTAINER_NAME}
 
 hint:
 	docker exec -it ${CONTAINER_NAME} node_modules/.bin/jshint main.js test/*
@@ -30,7 +30,7 @@ tests:
 	docker exec -it ${CONTAINER_NAME} npm test --loglevel=error
 
 setup:
-	docker exec -it ${CONTAINER_NAME} npm install --quiet
+	docker exec -it ${CONTAINER_NAME} npm install --dev
 
 run:
 	docker exec -it ${CONTAINER_NAME} node main.js
