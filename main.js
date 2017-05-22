@@ -49,29 +49,70 @@ var handleauth = function (req, res) {
   console.log('responsing handleauth...');
   var url_parts = url.parse(req.url, true);
   console.log('url_parts.query.code', url_parts.query.code);
-  app.access_token code url_parts.query.code;
-  console.log('setting access_token', app.code;
+  app.code = url_parts.query.code;
+  console.log('setting app.code', app.code);
 
   if (!_.isUndefined(url_parts.query.error)) {
-    console.log(url_parts.query);
+    console.log('error', url_parts);
     process.exit(1);
   }
   else {
+    if (_.isUndefined(app.token)) {
+      access_token(req, res)
+        .then(function (response) {
+          console.log('handleauth->access_token OK', response);
+          app.token = response;
+        });
+    }
     res.redirect('/');
   }
 };
 
 /**********************************************************************/
 
+var access_token = function (req, res) {
+  console.log('requesting access_token...');
+  console.log('using code', app.code);
+
+  var options = {
+    method: 'POST',
+    uri: 'https://api.instagram.com/oauth/access_token',
+    form: {
+      client_id: app.config.instagram.client.id,
+      client_secret: app.config.instagram.client.secret,
+      grant_type: 'authorization_code',
+      redirect_uri: app.config.instagram.redirect_uri,
+      code: app.code
+    },
+    headers: {
+      'User-Agent': 'Request-Promise'
+    }
+  };
+
+  console.log('using this options', options);
+
+  return request(options)
+    .then(function (response) {
+      console.log('access_token OK', response);
+      return JSON.parse(response);
+    })
+    .catch(function (err) {
+      console.log('access_token response', err);
+      process.exit(1);
+    });
+};
+
+/**********************************************************************/
+
 var followed_by = function (req, res) {
-  console.log('requesting followed-by...');
-  console.log('using access_token', app.code;
+  console.log('requesting followed_by...');
+  console.log('using token', app.token);
 
   var options = {
     uri: 'https://api.instagram.com/v1/users/self/followed-by',
     qs: {
       client_id: app.config.instagram.client.id,
-      access_token: app.access_tokencode
+      access_token: app.token.access_token
     },
     headers: {
       'User-Agent': 'Request-Promise'
@@ -83,17 +124,11 @@ var followed_by = function (req, res) {
 
   return request(options)
     .then(function (response) {
+      console.log('followed_by OK', response);
       return response;
     })
-    .catch(function (response) {
-      console.log('followed-by response',
-        response.name,
-        response.statusCode,
-        response.error,
-        response.statusMessage
-        // response.req._header,
-        // response.request.href
-      );
+    .catch(function (err) {
+      console.log('followed_by response', err);
       process.exit(1);
     });
 };
@@ -112,7 +147,7 @@ var block_followers = function (req, res) {
           method: 'POST',
           uri: 'https://api.instagram.com/v1/users/' + n.id + '/relationship',
           qs: {
-            access_token: app.access_tokencode
+            access_token: app.token.access_token
           },
           body: {
             action: 'unfollow'
@@ -126,15 +161,8 @@ var block_followers = function (req, res) {
           .then(function (body) {
             console.log('relationship body', body);
           })
-          .catch(function (response) {
-            console.log('relationship response',
-              response.name,
-              response.statusCode,
-              response.error,
-              response.statusMessage
-              // response.req._header,
-              // response.request.href
-            );
+          .catch(function (err) {
+            console.log('block_followers response', err);
             process.exit(1);
           });
 
@@ -144,14 +172,15 @@ var block_followers = function (req, res) {
 
 /**********************************************************************/
 
-var users_media_recent = function (req, res) {
-  console.log('requesting users-media-recent...');
-  console.log('using access_token', app.code;
+var users_search = function (req, res) {
+  console.log('requesting users_search...');
+  console.log('using token', app.token);
 
   var options = {
-    uri: 'https://api.instagram.com/v1/users/' + app.config.instagram.user.id + '/media/recent/',
+    uri: 'https://api.instagram.com/v1/users/search',
     qs: {
-      access_token: app.access_tokencode
+      q: app.config.instagram.user.id,
+      access_token: app.token.access_token
     },
     headers: {
       'User-Agent': 'Request-Promise'
@@ -163,18 +192,41 @@ var users_media_recent = function (req, res) {
 
   return request(options)
     .then(function (response) {
+      console.log('users_search OK', response);
       return response;
     })
-    .catch(function (response) {
-      console.log('users-media-recent response',
-        response
-        // response.name,
-        // response.statusCode,
-        // response.error,
-        // response.statusMessage
-        // response.req._header,
-        // response.request.href
-      );
+    .catch(function (err) {
+      console.log('users_search response', err);
+      process.exit(1);
+    });
+};
+
+/**********************************************************************/
+
+var users_media_recent = function (req, res) {
+  console.log('requesting users_media_recent...');
+  console.log('using token', app.token);
+
+  var options = {
+    uri: 'https://api.instagram.com/v1/users/' + app.config.instagram.user.id + '/media/recent',
+    qs: {
+      access_token: app.token.access_token
+    },
+    headers: {
+      'User-Agent': 'Request-Promise'
+    },
+    json: true
+  };
+
+  console.log('using this options', options);
+
+  return request(options)
+    .then(function (response) {
+      console.log('users_media_recent OK', response);
+      return response;
+    })
+    .catch(function (err) {
+      console.log('users_media_recent response', err);
       process.exit(1);
     });
 };
