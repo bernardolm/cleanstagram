@@ -4,4 +4,4 @@ instagram:
     secret: efgh5678
   redirect_uri: http://0.0.0.0:8881/handleauth
   user:
-    id: anyuser
+    username: anyuser
