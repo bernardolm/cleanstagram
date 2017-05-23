@@ -3,6 +3,7 @@
 var _       = require('lodash');
 var express = require('express');
 var fs      = require('fs');
+var Promise = require('promise');
 var request = require('request-promise');
 var url     = require('url');
 var yaml    = require('js-yaml');
@@ -152,6 +153,7 @@ var block_followers = function (req, res) {
       console.log('iterating followers...', response.data.length);
 
       var response_list = [];
+      var promises = [];
 
       _(response.data).forEach(function (n) {
         console.log('\n\nblocking id', n.id);
@@ -165,12 +167,12 @@ var block_followers = function (req, res) {
           form: {
             action: 'unfollow'
           },
-          // json: true
+          json: true
         };
 
         console.log('\nusing this options', options);
 
-        request(options)
+        var reqLocal = request(options)
           .then(function (response) {
             console.log('block_followers OK', n.id, response);
             response_list.push(response);
@@ -180,9 +182,14 @@ var block_followers = function (req, res) {
             response_list.push(err);
           });
 
+        promises.push(reqLocal);
+
       });
 
-      res.send(response_list);
+      Promise.all(promises)
+        .then(function () {
+          res.send(response_list);
+        })
 
     });
 };

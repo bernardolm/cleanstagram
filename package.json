@@ -10,6 +10,7 @@
     "express": "^4.13.3",
     "js-yaml": "^3.4.6",
     "lodash": "^4.17.4",
+    "promise": "^7.1.1",
     "request-promise": "^4.2.1"
   },
   "devDependencies": {
