@@ -61,7 +61,7 @@ var handleauth = function (req, res) {
       access_token(req, res)
         .then(function (response) {
           console.log('handleauth->access_token OK', response);
-          app.token = response;
+          app.token = JSON.parse(response);
         });
     }
     res.redirect('/');
@@ -94,7 +94,7 @@ var access_token = function (req, res) {
   return request(options)
     .then(function (response) {
       console.log('access_token OK', response);
-      return JSON.parse(response);
+      return response;
     })
     .catch(function (err) {
       console.log('access_token response', err.error);
@@ -193,12 +193,11 @@ var users_search = function (req, res) {
   return request(options)
     .then(function (response) {
       console.log('users_search OK', response);
-      app.config.instagram.user = response.data[0];
       return response;
     })
     .catch(function (err) {
       console.log('users_search response', err.error);
-      res.send(err)
+      return err;
     });
 };
 
@@ -209,31 +208,33 @@ var users_media_recent = function (req, res) {
   console.log('using token', app.token);
 
   users_search(req, res)
-    .then(function () {
+    .then(function (response) {
+      if (response.data.length > 0) {
 
-      var options = {
-        uri: 'https://api.instagram.com/v1/users/' + app.config.instagram.user.id + '/media/recent',
-        qs: {
-          access_token: app.token.access_token
-        },
-        headers: {
-          'User-Agent': 'Request-Promise'
-        },
-        json: true
+        var options = {
+          uri: 'https://api.instagram.com/v1/users/' + response.data[0].id + '/media/recent',
+          qs: {
+            access_token: app.token.access_token
+          },
+          headers: {
+            'User-Agent': 'Request-Promise'
+          },
+          json: true
+        };
+
+        console.log('\nusing this options', options);
+
+        return request(options)
+          .then(function (response) {
+            console.log('users_media_recent OK', response);
+            res.send(response)
+          })
+          .catch(function (err) {
+            console.log('users_media_recent response', err.error);
+            res.send(err)
+          });
+
       };
-
-      console.log('\nusing this options', options);
-
-      return request(options)
-        .then(function (response) {
-          console.log('users_media_recent OK', response);
-          res.send(response)
-        })
-        .catch(function (err) {
-          console.log('users_media_recent response', err.error);
-          res.send(err)
-        });
-
     });
 };
 
