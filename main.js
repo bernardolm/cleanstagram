@@ -39,7 +39,7 @@ app.get('/', function (req, res) {
 /**********************************************************************/
 
 var authorize_user = function (req, res) {
-  console.log('requesting authorize_user...');
+  console.log('\n\nrequesting authorize_user...');
   res.redirect('https://api.instagram.com/oauth/authorize/?client_id=' + app.config.instagram.client.id + '&redirect_uri=' + app.config.instagram.redirect_uri + '&response_type=code&scope=basic+public_content+follower_list+comments+relationships+likes');
 };
 
@@ -71,7 +71,7 @@ var handleauth = function (req, res) {
 /**********************************************************************/
 
 var access_token = function (req, res) {
-  console.log('requesting access_token...');
+  console.log('\n\nrequesting access_token...');
   console.log('using code', app.code);
 
   var options = {
@@ -80,16 +80,16 @@ var access_token = function (req, res) {
     form: {
       client_id: app.config.instagram.client.id,
       client_secret: app.config.instagram.client.secret,
+      code: app.code,
       grant_type: 'authorization_code',
       redirect_uri: app.config.instagram.redirect_uri,
-      code: app.code
     },
     headers: {
       'User-Agent': 'Request-Promise'
     }
   };
 
-  console.log('using this options', options);
+  console.log('\nusing this options', options);
 
   return request(options)
     .then(function (response) {
@@ -97,21 +97,20 @@ var access_token = function (req, res) {
       return JSON.parse(response);
     })
     .catch(function (err) {
-      console.log('access_token response', err);
-      process.exit(1);
+      console.log('access_token response', err.error);
+      res.send(err)
     });
 };
 
 /**********************************************************************/
 
 var followed_by = function (req, res) {
-  console.log('requesting followed_by...');
+  console.log('\n\nrequesting followed_by...');
   console.log('using token', app.token);
 
   var options = {
     uri: 'https://api.instagram.com/v1/users/self/followed-by',
     qs: {
-      client_id: app.config.instagram.client.id,
       access_token: app.token.access_token
     },
     headers: {
@@ -120,16 +119,16 @@ var followed_by = function (req, res) {
     json: true
   };
 
-  console.log('using this options', options);
+  console.log('\nusing this options', options);
 
   return request(options)
     .then(function (response) {
       console.log('followed_by OK', response);
-      return response;
+      res.send(response)
     })
     .catch(function (err) {
-      console.log('followed_by response', err);
-      process.exit(1);
+      console.log('followed_by response', err.error);
+      res.send(err)
     });
 };
 
@@ -155,15 +154,15 @@ var block_followers = function (req, res) {
           json: true // Automatically stringifies the body to JSON
         };
 
-        console.log('using this options', options);
+        console.log('\nusing this options', options);
 
         request(options)
           .then(function (body) {
             console.log('relationship body', body);
           })
           .catch(function (err) {
-            console.log('block_followers response', err);
-            process.exit(1);
+            console.log('block_followers response', err.error);
+            res.send(err)
           });
 
       }).value();
@@ -173,14 +172,15 @@ var block_followers = function (req, res) {
 /**********************************************************************/
 
 var users_search = function (req, res) {
-  console.log('requesting users_search...');
+  console.log('\n\nrequesting users_search...');
   console.log('using token', app.token);
 
   var options = {
     uri: 'https://api.instagram.com/v1/users/search',
     qs: {
-      q: app.config.instagram.user.id,
-      access_token: app.token.access_token
+      access_token: app.token.access_token,
+      count: 1,
+      q: app.config.instagram.user.username,
     },
     headers: {
       'User-Agent': 'Request-Promise'
@@ -188,56 +188,64 @@ var users_search = function (req, res) {
     json: true
   };
 
-  console.log('using this options', options);
+  console.log('\nusing this options', options);
 
   return request(options)
     .then(function (response) {
       console.log('users_search OK', response);
+      app.config.instagram.user = response.data[0];
       return response;
     })
     .catch(function (err) {
-      console.log('users_search response', err);
-      process.exit(1);
+      console.log('users_search response', err.error);
+      res.send(err)
     });
 };
 
 /**********************************************************************/
 
 var users_media_recent = function (req, res) {
-  console.log('requesting users_media_recent...');
+  console.log('\n\nrequesting users_media_recent...');
   console.log('using token', app.token);
 
-  var options = {
-    uri: 'https://api.instagram.com/v1/users/' + app.config.instagram.user.id + '/media/recent',
-    qs: {
-      access_token: app.token.access_token
-    },
-    headers: {
-      'User-Agent': 'Request-Promise'
-    },
-    json: true
-  };
+  users_search(req, res)
+    .then(function () {
 
-  console.log('using this options', options);
+      var options = {
+        uri: 'https://api.instagram.com/v1/users/' + app.config.instagram.user.id + '/media/recent',
+        qs: {
+          access_token: app.token.access_token
+        },
+        headers: {
+          'User-Agent': 'Request-Promise'
+        },
+        json: true
+      };
 
-  return request(options)
-    .then(function (response) {
-      console.log('users_media_recent OK', response);
-      return response;
-    })
-    .catch(function (err) {
-      console.log('users_media_recent response', err);
-      process.exit(1);
+      console.log('\nusing this options', options);
+
+      return request(options)
+        .then(function (response) {
+          console.log('users_media_recent OK', response);
+          res.send(response)
+        })
+        .catch(function (err) {
+          console.log('users_media_recent response', err.error);
+          res.send(err)
+        });
+
     });
 };
 
 /**********************************************************************/
 
 app.get('/authorize_user', authorize_user);
-app.get('/handleauth', handleauth);
-app.get('/followed_by', followed_by);
 app.get('/block_followers', block_followers);
+app.get('/followed_by', followed_by);
+app.get('/handleauth', handleauth);
 app.get('/users_media_recent', users_media_recent);
+
+app.set('json spaces', 2);
 
 var server = app.listen(8881, function () {
   var host = server.address().address;
