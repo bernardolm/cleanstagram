@@ -104,7 +104,19 @@ var access_token = function (req, res) {
 
 /**********************************************************************/
 
-var followed_by = function (req, res) {
+var get_followed_by = function (req, res) {
+  followed_by()
+    .then(function (response) {
+      console.log('get_followed_by OK', response);
+      res.send(response)
+    })
+    .catch(function (err) {
+      console.log('get_followed_by response', err.error);
+      res.send(err)
+    });
+}
+
+var followed_by = function () {
   console.log('\n\nrequesting followed_by...');
   console.log('using token', app.token);
 
@@ -124,23 +136,25 @@ var followed_by = function (req, res) {
   return request(options)
     .then(function (response) {
       console.log('followed_by OK', response);
-      res.send(response)
+      return response;
     })
     .catch(function (err) {
       console.log('followed_by response', err.error);
-      res.send(err)
+      return err;
     });
 };
 
 /**********************************************************************/
 
 var block_followers = function (req, res) {
-  followed_by(req, res)
-    .then(function (followers) {
-      console.log('iterating followers...', followers);
+  followed_by()
+    .then(function (response) {
+      console.log('iterating followers...', response.data.length);
 
-      _(followers).forEach(function (n) {
-        console.log('blocking id', n.id);
+      var response_list = [];
+
+      _(response.data).forEach(function (n) {
+        console.log('\n\nblocking id', n.id);
 
         var options = {
           method: 'POST',
@@ -148,24 +162,28 @@ var block_followers = function (req, res) {
           qs: {
             access_token: app.token.access_token
           },
-          body: {
+          form: {
             action: 'unfollow'
           },
-          json: true // Automatically stringifies the body to JSON
+          // json: true
         };
 
         console.log('\nusing this options', options);
 
         request(options)
-          .then(function (body) {
-            console.log('relationship body', body);
+          .then(function (response) {
+            console.log('block_followers OK', n.id, response);
+            response_list.push(response);
           })
           .catch(function (err) {
-            console.log('block_followers response', err.error);
-            res.send(err)
+            console.log('block_followers response', n.id, err);
+            response_list.push(err);
           });
 
-      }).value();
+      });
+
+      res.send(response_list);
+
     });
 };
 
@@ -242,7 +260,7 @@ var users_media_recent = function (req, res) {
 
 app.get('/authorize_user', authorize_user);
 app.get('/block_followers', block_followers);
-app.get('/followed_by', followed_by);
+app.get('/followed_by', get_followed_by);
 app.get('/handleauth', handleauth);
 app.get('/users_media_recent', users_media_recent);
 
