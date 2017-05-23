@@ -62,7 +62,7 @@ var handleauth = function (req, res) {
       access_token(req, res)
         .then(function (response) {
           console.log('handleauth->access_token OK', response);
-          app.token = JSON.parse(response);
+          app.token = response;
         });
     }
     res.redirect('/');
@@ -87,7 +87,8 @@ var access_token = function (req, res) {
     },
     headers: {
       'User-Agent': 'Request-Promise'
-    }
+    },
+    json: true
   };
 
   console.log('\nusing this options', options);
