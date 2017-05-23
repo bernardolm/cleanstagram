@@ -166,7 +166,7 @@ var block_followers = function (req, res) {
             access_token: app.token.access_token
           },
           form: {
-            action: 'unfollow'
+            action: 'block'
           },
           json: true
         };
