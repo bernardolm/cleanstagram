@@ -40,7 +40,7 @@ app.get('/', function (req, res) {
 /**********************************************************************/
 
 var authorize_user = function (req, res) {
-  console.log('\n\nrequesting authorize_user...');
+  console.log('\n\n\n\nrequesting authorize_user...');
   res.redirect('https://api.instagram.com/oauth/authorize/?client_id=' + app.config.instagram.client.id + '&redirect_uri=' + app.config.instagram.redirect_uri + '&response_type=code&scope=basic+public_content+follower_list+comments+relationships+likes');
 };
 
@@ -72,7 +72,7 @@ var handleauth = function (req, res) {
 /**********************************************************************/
 
 var access_token = function (req, res) {
-  console.log('\n\nrequesting access_token...');
+  console.log('\n\n\n\nrequesting access_token...');
   console.log('using code', app.code);
 
   var options = {
@@ -119,7 +119,7 @@ var get_followed_by = function (req, res) {
 }
 
 var followed_by = function () {
-  console.log('\n\nrequesting followed_by...');
+  console.log('\n\n\n\nrequesting followed_by...');
   console.log('using token', app.token);
 
   var options = {
@@ -157,7 +157,7 @@ var block_followers = function (req, res) {
       var promises = [];
 
       _(response.data).forEach(function (n) {
-        console.log('\n\nblocking id', n.id);
+        console.log('\n\n\n\nblocking id', n.id);
 
         var options = {
           method: 'POST',
@@ -198,7 +198,7 @@ var block_followers = function (req, res) {
 /**********************************************************************/
 
 var users_search = function (req, res) {
-  console.log('\n\nrequesting users_search...');
+  console.log('\n\n\n\nrequesting users_search...');
   console.log('using token', app.token);
 
   var options = {
@@ -230,7 +230,7 @@ var users_search = function (req, res) {
 /**********************************************************************/
 
 var users_media_recent = function (req, res) {
-  console.log('\n\nrequesting users_media_recent...');
+  console.log('\n\n\n\nrequesting users_media_recent...');
   console.log('using token', app.token);
 
   users_search(req, res)
@@ -266,11 +266,45 @@ var users_media_recent = function (req, res) {
 
 /**********************************************************************/
 
+var users_self_media_liked = function (req, res) {
+  console.log('\n\n\n\nrequesting users_self_media_liked...');
+  console.log('using token', app.token);
+
+  var options = {
+    uri: 'https://api.instagram.com/v1/users/self/media/liked',
+    qs: {
+      access_token: app.token.access_token,
+      // count: 10,
+      // max_like_id: 999999999
+    },
+    headers: {
+      'User-Agent': 'Request-Promise'
+    },
+    json: true
+  };
+
+  console.log('\nusing this options', options);
+
+  return request(options)
+    .then(function (response) {
+      console.log('users_self_media_liked OK', response);
+      res.send(response)
+    })
+    .catch(function (err) {
+      console.log('users_self_media_liked response', err.error);
+      res.send(err)
+    });
+
+};
+
+/**********************************************************************/
+
 app.get('/authorize_user', authorize_user);
 app.get('/block_followers', block_followers);
 app.get('/followed_by', get_followed_by);
 app.get('/handleauth', handleauth);
 app.get('/users_media_recent', users_media_recent);
+app.get('/users_self_media_liked', users_self_media_liked);
 
 app.set('json spaces', 2);
 
