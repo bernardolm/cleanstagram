@@ -12,8 +12,9 @@ start-docker:
 		-w /app \
 		-e "NODE_ENV=development" \
 		--name=${CONTAINER_NAME} \
-		node:4.5.0-slim && \
-		docker exec -it ${CONTAINER_NAME} npm install --dev --quiet && \
+		node:4 && \
+		sleep 2 && \
+		docker exec -it ${CONTAINER_NAME} npm install --quiet && \
 		echo "starting docker..." && \
 		docker start ${CONTAINER_NAME} > /dev/null; \
 	else \
@@ -32,7 +33,7 @@ tests:
 	docker exec -it ${CONTAINER_NAME} npm test --loglevel=error
 
 setup:
-	docker exec -it ${CONTAINER_NAME} npm install --dev --quiet
+	docker exec -it ${CONTAINER_NAME} npm install --quiet
 
 run:
 	docker exec -it ${CONTAINER_NAME} node main.js
