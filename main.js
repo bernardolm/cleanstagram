@@ -260,7 +260,7 @@ var users_media_recent = function (req, res) {
             res.send(err)
           });
 
-      };
+      }
     });
 };
 
