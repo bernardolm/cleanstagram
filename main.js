@@ -197,6 +197,18 @@ var block_followers = function (req, res) {
 
 /**********************************************************************/
 
+var get_users_search = function (req, res) {
+  users_search()
+    .then(function (response) {
+      console.log('get_users_search OK', response);
+      res.send(response)
+    })
+    .catch(function (err) {
+      console.log('get_users_search response', err.error);
+      res.send(err)
+    });
+}
+
 var users_search = function (req, res) {
   console.log('\n\n\n\nrequesting users_search...');
   console.log('using token', app.token);
@@ -304,6 +316,7 @@ app.get('/block_followers', block_followers);
 app.get('/followed_by', get_followed_by);
 app.get('/handleauth', handleauth);
 app.get('/users_media_recent', users_media_recent);
+app.get('/users_search', get_users_search);
 app.get('/users_self_media_liked', users_self_media_liked);
 
 app.set('json spaces', 2);
