@@ -1,13 +1,14 @@
 'use strict';
 
-var _        = require('lodash');
-var express  = require('express');
-var fs       = require('fs');
-var Promise  = require('promise');
-var readline = require('readline')
-var request  = require('request-promise');
-var url      = require('url');
-var yaml     = require('js-yaml');
+var _               = require('lodash');
+var express         = require('express');
+var fs              = require('fs');
+var Promise         = require('promise');
+var readline        = require('readline')
+var readlinePromise = require('readline-promise')
+var request         = require('request-promise');
+var url             = require('url');
+var yaml            = require('js-yaml');
 
 var app     = express();
 
@@ -244,13 +245,12 @@ var users_search_in_list = function (req, res) {
   console.log('\n\n\n\nrequesting users_search_in_list...');
   console.log('using token', app.token);
 
-  var lineReader = readline.createInterface({
+  var result = 'result:\n\n';
+
+  readlinePromise.createInterface({
     input: fs.createReadStream('users.txt')
-  });
-
-  var result = '';
-
-  lineReader.on('line', function (line) {
+  })
+  .each(function (line) {
     console.log('line from file:', line);
 
     var options = {
@@ -267,21 +267,25 @@ var users_search_in_list = function (req, res) {
     };
 
     console.log('\nusing this options', options);
+    console.log('');
 
     return request(options)
       .then(function (response) {
         console.log('users_search_in_list OK', response);
-        result += response.data[0].username + ', ' + response.data[0].id;
+        result += response.data[0].username + ', ' + response.data[0].id + '\n';
+        return response;
       })
       .catch(function (err) {
         console.log('users_search_in_list response', err.error);
         return err;
       });
 
-    console.log('');
+  })
+  .then(function(count) {
+    console.log('result');
+    res.send(result);
   });
 
-  res.send(result);
 }
 
 /**********************************************************************/
