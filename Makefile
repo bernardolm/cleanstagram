@@ -12,9 +12,8 @@ start-docker:
 		-w /app \
 		-e "NODE_ENV=development" \
 		--name=${CONTAINER_NAME} \
-		node:4 && \
+		kkarczmarczyk/node-yarn && \
 		sleep 2 && \
-		docker exec -it ${CONTAINER_NAME} npm install --quiet && \
 		echo "starting docker..." && \
 		docker start ${CONTAINER_NAME} > /dev/null; \
 	else \
@@ -30,10 +29,15 @@ hint:
 	docker exec -it ${CONTAINER_NAME} node_modules/.bin/jshint main.js test/*
 
 tests:
-	docker exec -it ${CONTAINER_NAME} npm test --loglevel=error
+	docker exec -it ${CONTAINER_NAME} yarn test --loglevel=error
+	docker exec -it ${CONTAINER_NAME} yarn test --loglevel=error
 
 setup:
-	docker exec -it ${CONTAINER_NAME} npm install --quiet
+	docker exec -it ${CONTAINER_NAME} yarn install
+	docker exec -it ${CONTAINER_NAME} yarn install
 
 run:
 	docker exec -it ${CONTAINER_NAME} node main.js
+
+cache-clean:
+	docker exec -it ${CONTAINER_NAME} yarn cache clean

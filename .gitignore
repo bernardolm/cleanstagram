@@ -33,3 +33,5 @@ config.yml
 .~*
 
 .env
+package-lock.json
+yarn.lock
