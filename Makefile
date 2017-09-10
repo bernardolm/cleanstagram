@@ -30,10 +30,8 @@ hint:
 
 tests:
 	docker exec -it ${CONTAINER_NAME} yarn test --loglevel=error
-	docker exec -it ${CONTAINER_NAME} yarn test --loglevel=error
 
 setup:
-	docker exec -it ${CONTAINER_NAME} yarn install
 	docker exec -it ${CONTAINER_NAME} yarn install
 
 run:
