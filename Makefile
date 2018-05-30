@@ -9,15 +9,16 @@ endif
 
 start-docker: build-docker
 	docker run --rm \
-		-v ${PWD}:${HOME}/app \
+		-v ${PWD}:/usr/app \
 		-p 8881:8881 \
-		-w ~/app \
+		-w /usr/app \
 		--name ${CONTAINER_NAME} \
 		${CONTAINER_NAME}
 
 destroy-docker:
 	-docker stop ${CONTAINER_NAME}
 	-docker rm ${CONTAINER_NAME}
+	-docker rmi ${CONTAINER_NAME}
 
 hint: start-docker
 	docker exec -it ${CONTAINER_NAME} ./node_modules/.bin/jshint main.js test/*
@@ -28,8 +29,7 @@ tests: start-docker
 setup: start-docker
 	docker exec -it ${CONTAINER_NAME} yarn
 
-run: start-docker
-	docker exec -it ${CONTAINER_NAME} node main.js
+restart: destroy-docker build-docker start-docker
 
 cache-clean: start-docker
 	docker exec -it ${CONTAINER_NAME} yarn cache clean

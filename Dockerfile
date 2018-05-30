@@ -1,17 +1,12 @@
 FROM kkarczmarczyk/node-yarn
 
-ENV WORKDIR $HOME/app
 ENV NODE_ENV development
+ENV TERM xterm-256color
+
+ENTRYPOINT ["/usr/app/Dockerfile_entrypoint.sh"]
 
 EXPOSE 8881
-WORKDIR $WORKDIR
+WORKDIR /usr/app
 
-RUN npm install --no-optional --global \
-    mocha-cli \
-    node-gyp
-
-CMD ["yarn"]
-CMD ["node", "main.js"]
-
-ADD . $WORKDIR
-VOLUME ["$WORKDIR"]
+ADD . /usr/app
+VOLUME /usr/app
