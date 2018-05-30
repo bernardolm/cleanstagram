@@ -362,8 +362,8 @@ var users_self_media_liked = function (req, res) {
 /**********************************************************************/
 
 var users_self_media_recent = function (req, res) {
-  console.log('\n\n\n\nrequesting users_self_media_recent...');
-  console.log('using token', app.token);
+  console.log('\nrequesting users_self_media_recent...');
+  console.log('\nusing token', app.token);
 
   var options = {
     uri: 'https://api.instagram.com/v1/users/self/media/recent',
@@ -381,14 +381,57 @@ var users_self_media_recent = function (req, res) {
 
   return request(options)
     .then(function (response) {
-      console.log('users_self_media_recent OK', response);
-      res.send(response)
+      console.log('\nusers_self_media_recent OK', response);
+      return response;
     })
     .catch(function (err) {
-      console.log('users_self_media_recent response', err.error);
-      res.send(err)
+      console.log('\nusers_self_media_recent response', err.error);
+      return err;
     });
 
+};
+
+/**********************************************************************/
+
+var print_users_self_media_recent = function (req, res) {
+  users_self_media_recent()
+    .then(function (response) {
+      console.log('\niterating recent media...', response.data.length);
+
+      var response_list = [];
+
+      _(response.data).forEach(function (n) {
+        console.log('\nprinting link', n.link);
+
+        var options = {
+          'quality': 100,
+          'screenSize': {
+            'width': 1920,
+            'height': 1080
+          },
+          'shotSize': {
+            'width': 'all',
+            'height': 'all'
+          },
+          'userAgent': 'Mozilla / 5.0(X11; Linux x86_64) AppleWebKit / 537.36(KHTML, like Gecko) Chrome / 66.0.3359.181 Safari / 537.36'
+        };
+
+        var file_name = n.created_time + '.jpeg';
+        console.log('\nsaving to ', file_name);
+
+        webshot(n.link, file_name, options, function (err) {
+          if (typeof err !== 'undefined') {
+            console.log('\nprint response', n.link, err);
+            response_list.push(err);
+          } else {
+            console.log('\nprint OK', n.link);
+            response_list.push(function () { return {}[n.link]='OK'});
+          }
+        });
+      });
+
+      res.send(response_list);
+    });
 };
 
 /**********************************************************************/
@@ -402,6 +445,7 @@ app.get('/users_search', get_users_search);
 app.get('/users_search_in_list', users_search_in_list);
 app.get('/users_self_media_liked', users_self_media_liked);
 app.get('/users_self_media_recent', users_self_media_recent);
+app.get('/print_users_self_media_recent', print_users_self_media_recent);
 
 app.set('json spaces', 2);
 
