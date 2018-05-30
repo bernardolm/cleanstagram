@@ -8,9 +8,10 @@ var readline        = require('readline')
 var readlinePromise = require('readline-promise')
 var request         = require('request-promise');
 var url             = require('url');
+var webshot         = require('webshot');
 var yaml            = require('js-yaml');
 
-var app     = express();
+var app = express();
 
 /**********************************************************************/
 
@@ -360,6 +361,38 @@ var users_self_media_liked = function (req, res) {
 
 /**********************************************************************/
 
+var users_self_media_recent = function (req, res) {
+  console.log('\n\n\n\nrequesting users_self_media_recent...');
+  console.log('using token', app.token);
+
+  var options = {
+    uri: 'https://api.instagram.com/v1/users/self/media/recent',
+    qs: {
+      access_token: app.token.access_token,
+      count: 999,
+    },
+    headers: {
+      'User-Agent': 'Request-Promise'
+    },
+    json: true
+  };
+
+  console.log('\nusing this options', options);
+
+  return request(options)
+    .then(function (response) {
+      console.log('users_self_media_recent OK', response);
+      res.send(response)
+    })
+    .catch(function (err) {
+      console.log('users_self_media_recent response', err.error);
+      res.send(err)
+    });
+
+};
+
+/**********************************************************************/
+
 app.get('/authorize_user', authorize_user);
 app.get('/block_followers', block_followers);
 app.get('/followed_by', get_followed_by);
@@ -368,6 +401,7 @@ app.get('/users_media_recent', users_media_recent);
 app.get('/users_search', get_users_search);
 app.get('/users_search_in_list', users_search_in_list);
 app.get('/users_self_media_liked', users_self_media_liked);
+app.get('/users_self_media_recent', users_self_media_recent);
 
 app.set('json spaces', 2);
 
