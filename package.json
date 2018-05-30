@@ -14,6 +14,7 @@
     "readline-promise": "^0.0.1",
     "request": "2.81.0",
     "request-promise": "4.2.1",
+    "webshot": "^0.18.0",
     "yan": "0.0.1"
   },
   "devDependencies": {
@@ -23,7 +24,6 @@
     "mocha": "3.4.2"
   },
   "scripts": {
-    "test": "node_modules/.bin/mocha --reporter nyan --timeout 15000"
   },
   "repository": {
     "type": "git",
