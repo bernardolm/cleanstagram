@@ -1,41 +1,35 @@
 CONTAINER_NAME=cleanstagram
 CURRENT_DOCKER=$(shell docker ps -aqf name=${CONTAINER_NAME})
+PWD=$(shell pwd)
 
-start-docker:
-	@echo "checking docker container ${CONTAINER_NAME}..."
-	@echo "CURRENT_DOCKER is ${CURRENT_DOCKER}"
-	@if [ -z "${CURRENT_DOCKER}" ]; then \
-		echo "creating docker..." && \
-		docker run -it -d \
+build-docker:
+ifeq ($(shell docker images -q ${CONTAINER_NAME} 2> /dev/null | wc -l),0)
+	docker build --force-rm . -t ${CONTAINER_NAME}
+endif
+
+start-docker: build-docker
+	docker run --rm \
+		-v ${PWD}:${HOME}/app \
 		-p 8881:8881 \
-		-v `pwd`:/app \
-		-w /app \
-		-e "NODE_ENV=development" \
-		--name=${CONTAINER_NAME} \
-		kkarczmarczyk/node-yarn && \
-		sleep 2 && \
-		echo "starting docker..." && \
-		docker start ${CONTAINER_NAME} > /dev/null; \
-	else \
-		echo "starting docker..." && \
-		docker start ${CONTAINER_NAME} > /dev/null; \
-	fi
+		-w ~/app \
+		--name ${CONTAINER_NAME} \
+		${CONTAINER_NAME}
 
 destroy-docker:
 	-docker stop ${CONTAINER_NAME}
 	-docker rm ${CONTAINER_NAME}
 
-hint:
-	docker exec -it ${CONTAINER_NAME} node_modules/.bin/jshint main.js test/*
+hint: start-docker
+	docker exec -it ${CONTAINER_NAME} ./node_modules/.bin/jshint main.js test/*
 
-tests:
-	docker exec -it ${CONTAINER_NAME} yarn test --loglevel=error
+tests: start-docker
+	docker exec -it ${CONTAINER_NAME} ./node_modules/.bin/mocha --reporter nyan --timeout 15000
 
-setup:
-	docker exec -it ${CONTAINER_NAME} yarn install
+setup: start-docker
+	docker exec -it ${CONTAINER_NAME} yarn
 
-run:
+run: start-docker
 	docker exec -it ${CONTAINER_NAME} node main.js
 
-cache-clean:
+cache-clean: start-docker
 	docker exec -it ${CONTAINER_NAME} yarn cache clean
