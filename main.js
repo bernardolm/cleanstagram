@@ -404,6 +404,14 @@ var print_users_self_media_recent = function (req, res) {
         console.log('\nprinting link', n.link);
 
         var options = {
+          'errorIfStatusIsNot200': true,
+          'errorIfJSException': true,
+          'phantomConfig': {
+            'debug': 'true',
+            'ignore-ssl-errors': 'false',
+            'local-to-remote-url-access': 'true',
+            'web-security': 'false'
+          },
           'quality': 100,
           'screenSize': {
             'width': 1920,
@@ -417,15 +425,23 @@ var print_users_self_media_recent = function (req, res) {
         };
 
         var file_name = n.created_time + '.jpeg';
-        console.log('\nsaving to ', file_name);
 
         webshot(n.link, file_name, options, function (err) {
           if (typeof err !== 'undefined') {
-            console.log('\nprint response', n.link, err);
+            console.log('\nprint err', n.link, err);
+            var response = {
+              'file_name': file_name,
+              'status': 'err',
+              'err': err
+            };
             response_list.push(err);
           } else {
             console.log('\nprint OK', n.link);
-            response_list.push(function () { return {}[n.link]='OK'});
+            var response = {
+              'file_name': file_name,
+              'status': 'OK'
+            };
+            response_list.push(response);
           }
         });
       });
