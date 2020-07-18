@@ -9,7 +9,7 @@
   "dependencies": {
     "express": "4.15.3",
     "js-yaml": "3.9.0",
-    "lodash": "4.17.4",
+    "lodash": "4.17.19",
     "promise": "8.0.1",
     "readline-promise": "^0.0.1",
     "request": "2.81.0",
